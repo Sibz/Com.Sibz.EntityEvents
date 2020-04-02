@@ -1,0 +1,13 @@
+{
+  "author": "Steven Turner",
+  "dependencies": {
+    "com.sibz.command-buffer-helpers": "0.2.0",
+    "com.unity.entities": "0.8.0-preview.8"
+  },
+  "deprecated": false,
+  "description": "Entities system and helpers to create event entities that exist for 1 frame",
+  "displayName": "Sibz: Entity Events",
+  "license": "ISC",
+  "name": "com.sibz.entity-events",
+  "version": "0.0.1"
+}
