@@ -7,10 +7,16 @@
 Available via Package Manager [https://pm.entityzero.com/](https://pm.entityzero.com/-/web/detail/com.sibz.entity-events)  
 *Find package manager setup instructions [here](https://github.com/Sibz/Sibz.UnityPackages)*.  
 Source on [GitHub](https://github.com/Sibz/Com.Sibz.EntityEvents).
-
+##EventComponentSystem
 ### System Creation
 
-The system `EventComponentSystem` does not automatically inject itself into world. This must be done manually:
+The system `EventComponentSystem` does not automatically inject itself into world. You can either create your 
+own implementation or set up manually.
+```c#
+public class MyEventComponentSystem : EventComponentSystem
+{
+}
+```
 ```c#
 var updateGroup = World.GetExistingSystem<SimulationSystemGroup>();
 updateGroup.AddSystemToUpdateList(World.CreateSystem<EventComponentSystem>());
@@ -87,6 +93,29 @@ public class MySystem : JobComponentSystem
         World.EventSystemAddJobDependency(inputDeps);
 
         return inputDeps;
+    }
+}
+```
+## HookSystem
+This provides a system that connects events to managed code execution.
+### Create System
+```c#
+public class MyHookSystem : HookSystem
+{
+}
+```
+### Register events in your manged code
+```c#
+public class MyManagedClass
+{
+    public void OnEvent(IEventComponentData eventData)
+    {
+        // Unbox event if data is needed.
+        TestEventWithData data = (TestEventWithData)eventData;
+    }    
+    public MyManagedClass(World world)
+    {
+        world.GetExistingSystem<HookSystem>().RegisterHook<TestEventWithData>(OnEvent);
     }
 }
 ```
