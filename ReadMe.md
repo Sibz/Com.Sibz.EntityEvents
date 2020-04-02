@@ -1,9 +1,14 @@
 
 # Entity Events
 
-Component System and associated helpers for creating single frame event entities.
+**Event Component System and associated helpers for creating single frame event entities.**   
+**All Event entities are destroyed and created at the beginning of the initialisation system, they live for exactly one frame.**
 
-All Event entities are destroyed and created at the beginning of the initialisation system, they live for exactly one frame.
+Available via Package Manager [https://pm.entityzero.com/](-/web/detail/com.sibz.entity-events)  
+*Find package manager setup instructions [here](https://github.com/Sibz/Sibz.UnityPackages)*.  
+Source on [GitHub](https://github.com/Sibz/Com.Sibz.EntityEvents).
+
+### System Creation
 
 The system `EventComponentSystem` does not automatically inject itself into world. This must be done manually:
 ```c#
@@ -13,7 +18,8 @@ updateGroup.SortSystemUpdateList();
 ```
 *Note: Can be in any system group providing it gets updated every frame.*
 
-### Event Component Creation
+### Event Component
+Extend your struct from `IEventComponentData`
 ```c#
 public struct MyEvent : IEventComponentData 
 {
@@ -33,7 +39,7 @@ As simple as that, the event is queued for creation next frame, gets created and
 
 ### Concurrency
 Sometimes you may want to queue events from a job, this can be done and below are examples.   
-Don't forget to `World.EventSystemAddJobDependency(jobHandle)`.
+*Don't forget to `World.EventSystemAddJobDependency(jobHandle)`.*
 
 #### Create a job part to execute inside the job  
 ```c#
