@@ -51,12 +51,12 @@ EnqueueEventJobPart<MyEvent> jobPart = World.GetEnqueueEventJobPart(new MyEvent 
 ```  
 #### Execute from within a job
 ```c#
-inputdeps = Entities.ForEach((ref MyComponent component)=>{
+inputDeps = Entities.ForEach((ref MyComponent component)=>{
     // can add/change data if required
     jobPart.EventData.Index = -1;
     // then call Execute()
     jobPart.Execute();
-});
+}).Schedule(inputDeps);
 
 // Don't forget this!
 World.EventSystemAddJobDependency(inputdeps);
