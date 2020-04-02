@@ -1,0 +1,22 @@
+{
+    "name": "Com.Sibz.EntityEvents.Tests",
+    "references": [
+        "GUID:7df313acebec66b458737601833af84d",
+        "GUID:734d92eba21c94caba915361bd5ac177",
+        "GUID:8a2eafa29b15f444eb6d74f94a930e1d",
+        "GUID:8819f35a0fc84499b990e90a4ca1911f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

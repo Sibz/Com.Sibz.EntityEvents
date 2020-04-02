@@ -1,0 +1,16 @@
+{
+    "name": "Com.Sibz.EntityEvents",
+    "references": [
+        "GUID:734d92eba21c94caba915361bd5ac177",
+        "GUID:987d7dc0ac8e24144a696b01f554c2b9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
