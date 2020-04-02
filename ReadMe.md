@@ -4,7 +4,7 @@
 **Event Component System and associated helpers for creating single frame event entities.**   
 **All Event entities are destroyed and created at the beginning of the initialisation system, they live for exactly one frame.**
 
-Available via Package Manager [https://pm.entityzero.com/](-/web/detail/com.sibz.entity-events)  
+Available via Package Manager [https://pm.entityzero.com/](https://pm.entityzero.com/-/web/detail/com.sibz.entity-events)  
 *Find package manager setup instructions [here](https://github.com/Sibz/Sibz.UnityPackages)*.  
 Source on [GitHub](https://github.com/Sibz/Com.Sibz.EntityEvents).
 
