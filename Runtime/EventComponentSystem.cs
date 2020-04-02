@@ -16,7 +16,9 @@ namespace Sibz.EntityEvents
         private EntityQuery allEventComponentsQuery;
         private BeginInitCommandBuffer commandBufferDestroyer;
         private BeginInitCommandBuffer commandBufferCreator;
+
         private BeginInitCommandBuffer commandBufferConcurrent;
+
         //private readonly Queue<object> eventQueue = new Queue<object>();
         private int concurrentRequestCount;
 
@@ -26,7 +28,6 @@ namespace Sibz.EntityEvents
         public EnqueueEventJobPart<T> GetJobPart<T>(T eventData)
             where T : struct, IEventComponentData
         {
-
             EnsureDestroyBufferIsExecutedFirst(commandBufferDestroyer);
 
             return new EnqueueEventJobPart<T>

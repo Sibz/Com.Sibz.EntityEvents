@@ -176,27 +176,27 @@ namespace Sibz.EntityEvents.Tests
         }
 
         [DisableAutoCreation]
-public class TestEventRaisingSystem : JobComponentSystem
-{
-    protected override JobHandle OnUpdate(JobHandle inputDeps)
-    {
-        Enabled = false;
-        inputDeps = new ConcurrentRaiseEventTest<TestEvent>
+        public class TestEventRaisingSystem : JobComponentSystem
         {
-            JobPart = World.GetEnqueueEventJobPart<TestEvent>()
-        }.Schedule(inputDeps);
-        inputDeps = new ConcurrentRaiseEventTest<TestEventWithData>
-        {
-            JobPart = World.GetEnqueueEventJobPart(new TestEventWithData
+            protected override JobHandle OnUpdate(JobHandle inputDeps)
             {
-                Index = 5
-            })
-        }.Schedule(inputDeps);
+                Enabled = false;
+                inputDeps = new ConcurrentRaiseEventTest<TestEvent>
+                {
+                    JobPart = World.GetEnqueueEventJobPart<TestEvent>()
+                }.Schedule(inputDeps);
+                inputDeps = new ConcurrentRaiseEventTest<TestEventWithData>
+                {
+                    JobPart = World.GetEnqueueEventJobPart(new TestEventWithData
+                    {
+                        Index = 5
+                    })
+                }.Schedule(inputDeps);
 
-        World.EventSystemAddJobDependency(inputDeps);
+                World.EventSystemAddJobDependency(inputDeps);
 
-        return inputDeps;
-    }
-}
+                return inputDeps;
+            }
+        }
     }
 }
