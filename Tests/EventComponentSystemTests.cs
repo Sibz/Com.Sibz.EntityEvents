@@ -85,7 +85,7 @@ namespace Sibz.EntityEvents.Tests
             TestWorld.EnqueueEvent<TestEvent>();
             EventComponentSystem.Update();
             BufferSystem.Update();
-            Assert.AreEqual(1, GetSingletonQuery<TestEvent>().CalculateEntityCount());
+            Assert.AreEqual(1, GetSingletonQuery<TestEvent>().CalculateEntityCount(), "Failed to create entity");
             EventComponentSystem.Update();
             BufferSystem.Update();
             Assert.AreEqual(0, GetSingletonQuery<TestEvent>().CalculateEntityCount());
@@ -135,14 +135,24 @@ namespace Sibz.EntityEvents.Tests
         [Test]
         public void ConcurrentJobs_ShouldRaiseEvents()
         {
-            EventComponentSystem.Update();
-            BufferSystem.Update();
+            //EventComponentSystem.Update();
+            //BufferSystem.Update();
             TestEventRaisingSystem system = TestWorld.CreateSystem<TestEventRaisingSystem>();
             system.Update();
             EventComponentSystem.Update();
             BufferSystem.Update();
+            EventComponentSystem.Update();
             Assert.AreEqual(1, GetSingletonQuery<TestEvent>().CalculateEntityCount());
             Assert.AreEqual(5, GetSingletonQuery<TestEventWithData>().GetSingleton<TestEventWithData>().Index);
+        }
+
+        [Test]
+        public void WhenQueuingAfterSystem_ShouldStillCreateEventNextFrame()
+        {
+            EventComponentSystem.Update();
+            TestWorld.EnqueueEvent<TestEvent>();
+            BufferSystem.Update();
+            Assert.AreEqual(1, GetSingletonQuery<TestEvent>().CalculateEntityCount());
         }
 
         public struct TestEvent : IEventComponentData

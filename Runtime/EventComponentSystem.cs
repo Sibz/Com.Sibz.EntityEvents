@@ -14,9 +14,10 @@ namespace Sibz.EntityEvents
     public class EventComponentSystem : JobComponentSystem
     {
         private EntityQuery allEventComponentsQuery;
-        private BeginInitCommandBuffer commandBuffer;
+        private BeginInitCommandBuffer commandBufferDestroyer;
+        private BeginInitCommandBuffer commandBufferCreator;
         private BeginInitCommandBuffer commandBufferConcurrent;
-        private readonly Queue<object> eventQueue = new Queue<object>();
+        //private readonly Queue<object> eventQueue = new Queue<object>();
         private int concurrentRequestCount;
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -25,13 +26,8 @@ namespace Sibz.EntityEvents
         public EnqueueEventJobPart<T> GetJobPart<T>(T eventData)
             where T : struct, IEventComponentData
         {
-            // This ensures the non concurrent buffer is created/executed first
-            // Required as the destroy entities on OnUpdate needs to occur first
-            // The actual exception should never be thrown
-            if (!commandBuffer.Buffer.IsCreated)
-            {
-                throw new InvalidOperationException();
-            }
+
+            EnsureDestroyBufferIsExecutedFirst(commandBufferDestroyer);
 
             return new EnqueueEventJobPart<T>
             {
@@ -42,6 +38,17 @@ namespace Sibz.EntityEvents
             };
         }
 
+        private static void EnsureDestroyBufferIsExecutedFirst(BeginInitCommandBuffer destroyBuffer)
+        {
+            // This ensures the non concurrent buffer is created/executed first
+            // Required as the destroy entities on OnUpdate needs to occur first
+            // The actual exception should never be thrown
+            if (!destroyBuffer.Buffer.IsCreated)
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
         public void ConcurrentBufferAddJobDependency(JobHandle job)
         {
             commandBufferConcurrent.AddJobDependency(job);
@@ -49,14 +56,15 @@ namespace Sibz.EntityEvents
 
         public void EnqueueEvent(object eventData)
         {
-            eventQueue.Enqueue(eventData);
+            CreateSingletonFromObject(eventData);
         }
 
         protected override void OnCreate()
         {
             allEventComponentsQuery = GetEntityQuery(new EntityQueryDesc {Any = EventTypes});
-            commandBuffer = new BeginInitCommandBuffer(World);
+            commandBufferDestroyer = new BeginInitCommandBuffer(World);
             commandBufferConcurrent = new BeginInitCommandBuffer(World);
+            commandBufferCreator = new BeginInitCommandBuffer(World);
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -65,12 +73,12 @@ namespace Sibz.EntityEvents
             // command buffer internally. Need a hook there to reset this.
             concurrentRequestCount = 0;
 
-            commandBuffer.Buffer.DestroyEntity(allEventComponentsQuery);
+            commandBufferDestroyer.Buffer.DestroyEntity(allEventComponentsQuery);
 
-            while (eventQueue.Count > 0)
+            /*while (eventQueue.Count > 0)
             {
                 CreateSingletonFromObject(eventQueue.Dequeue());
-            }
+            }*/
 
             return inputDeps;
         }
@@ -104,7 +112,9 @@ namespace Sibz.EntityEvents
         private void CreateSingleton<T>(T obj)
             where T : struct, IComponentData
         {
-            commandBuffer.Buffer.CreateSingleton(obj);
+            EnsureDestroyBufferIsExecutedFirst(commandBufferDestroyer);
+
+            commandBufferCreator.Buffer.CreateSingleton(obj);
         }
     }
 }

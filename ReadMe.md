@@ -7,8 +7,9 @@ All Event entities are destroyed and created at the beginning of the initialisat
 
 The system `EventComponentSystem` does not automatically inject itself into world. This must be done manually:
 ```c#
-EventComponentSystem system = World.CreateSystem<EventComponentSystem>();
-World.GetExistingSystem<SimulationSystemGroup>().AddSystemToUpdateList(system);
+var updateGroup = World.GetExistingSystem<SimulationSystemGroup>();
+updateGroup.AddSystemToUpdateList(World.CreateSystem<EventComponentSystem>());
+updateGroup.SortSystemUpdateList();
 ```
 *Note: Can be in any system group providing it gets updated every frame.*
 
