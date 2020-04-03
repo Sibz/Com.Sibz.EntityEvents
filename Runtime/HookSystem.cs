@@ -80,17 +80,20 @@ namespace Sibz.EntityEvents
                 var components = EntityManager.GetComponentTypes(e, Allocator.TempJob);
                 if (components.Length == 0)
                 {
+                    components.Dispose();
                     return;
                 }
 
                 if (!ActionMap.ContainsKey(components[0]))
                 {
+                    components.Dispose();
                     return;
                 }
 
                 if (components[0].IsZeroSized)
                 {
                     ActionMap[components[0]].Invoke(default);
+                    components.Dispose();
                     return;
                 }
 
@@ -98,6 +101,7 @@ namespace Sibz.EntityEvents
                 MethodInfo getComponent = getComponentMethodInfo.MakeGenericMethod(type);
                 ActionMap[components[0]]
                     .Invoke(getComponent.Invoke(EntityManager, new object[] {e}) as IEventComponentData);
+                components.Dispose();
             });
         }
     }
