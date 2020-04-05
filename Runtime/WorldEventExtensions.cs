@@ -24,7 +24,7 @@ namespace Sibz.EntityEvents
         public static void EnqueueEvent<T>(this World world, T eventData = default)
             where T : struct, IEventComponentData
         {
-            EventComponentSystem system = world.GetFirstSystemWithBaseType<EventComponentSystem>();
+            var system = world.GetFirstSystemWithBaseType<EventComponentSystem>();
             if (system is null)
             {
                 throw new NullReferenceException($"{nameof(EventComponentSystem)} is null. Unable to enqueue event");
@@ -37,7 +37,7 @@ namespace Sibz.EntityEvents
         public static EnqueueEventJobPart<T> GetEnqueueEventJobPart<T>(this World world, T eventData = default)
             where T : struct, IEventComponentData
         {
-            EventComponentSystem system = world.GetFirstSystemWithBaseType<EventComponentSystem>();
+            var system = world.GetFirstSystemWithBaseType<EventComponentSystem>();
             if (system is null)
             {
                 throw new NullReferenceException($"{nameof(EventComponentSystem)} is null. Unable to enqueue event");
@@ -48,7 +48,7 @@ namespace Sibz.EntityEvents
 
         public static void EventSystemAddJobDependency(this World world, JobHandle job)
         {
-            EventComponentSystem system = world.GetFirstSystemWithBaseType<EventComponentSystem>();
+            var system = world.GetFirstSystemWithBaseType<EventComponentSystem>();
             if (system is null)
             {
                 throw new NullReferenceException($"{nameof(EventComponentSystem)} is null. Unable to enqueue event");

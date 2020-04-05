@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Sibz.EntityEvents;
 using Unity.Collections;
 using Unity.Entities;
 
@@ -9,11 +8,10 @@ namespace Sibz.EntityEvents
 {
     public class HookSystem : ComponentSystem
     {
-        private EntityQuery allEventComponentsQuery;
-
         protected readonly Dictionary<ComponentType, Action<IEventComponentData>> ActionMap =
             new Dictionary<ComponentType, Action<IEventComponentData>>();
 
+        private EntityQuery allEventComponentsQuery;
         private MethodInfo getComponentMethodInfo;
 
         public void RegisterHook<T>(Action<IEventComponentData> action)
@@ -33,7 +31,7 @@ namespace Sibz.EntityEvents
 
         public void RegisterHooks(Dictionary<ComponentType, Action<IEventComponentData>> types)
         {
-            foreach (var type in types)
+            foreach (KeyValuePair<ComponentType, Action<IEventComponentData>> type in types)
             {
                 RegisterHook(type.Key, type.Value);
             }
@@ -73,11 +71,10 @@ namespace Sibz.EntityEvents
                 .GetMethod(nameof(EntityManager.GetComponentData));
         }
 
-        protected override void OnUpdate()
-        {
-            Entities.With(allEventComponentsQuery).ForEach((e) =>
+        protected override void OnUpdate() =>
+            Entities.With(allEventComponentsQuery).ForEach(e =>
             {
-                var components = EntityManager.GetComponentTypes(e, Allocator.TempJob);
+                NativeArray<ComponentType> components = EntityManager.GetComponentTypes(e, Allocator.TempJob);
                 if (components.Length == 0)
                 {
                     components.Dispose();
@@ -100,9 +97,8 @@ namespace Sibz.EntityEvents
                 Type type = components[0].GetManagedType();
                 MethodInfo getComponent = getComponentMethodInfo.MakeGenericMethod(type);
                 ActionMap[components[0]]
-                    .Invoke(getComponent.Invoke(EntityManager, new object[] {e}) as IEventComponentData);
+                    .Invoke(getComponent.Invoke(EntityManager, new object[] { e }) as IEventComponentData);
                 components.Dispose();
             });
-        }
     }
 }

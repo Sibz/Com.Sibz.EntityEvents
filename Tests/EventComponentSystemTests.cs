@@ -18,28 +18,19 @@ namespace Sibz.EntityEvents.Tests
             TestWorld.GetExistingSystem<EventComponentSystem>();
 
         private static Entity GetSingletonEntity<T>()
-            where T : struct, IComponentData
-        {
-            return GetSingletonQuery<T>().GetSingletonEntity();
-        }
+            where T : struct, IComponentData =>
+            GetSingletonQuery<T>().GetSingletonEntity();
 
         public static T GetSingleton<T>()
-            where T : struct, IComponentData
-        {
-            return GetSingletonQuery<T>().GetSingleton<T>();
-        }
+            where T : struct, IComponentData =>
+            GetSingletonQuery<T>().GetSingleton<T>();
 
         private static EntityQuery GetSingletonQuery<T>()
-            where T : struct, IComponentData
-        {
-            return TestWorld.EntityManager.CreateEntityQuery(typeof(T));
-        }
+            where T : struct, IComponentData =>
+            TestWorld.EntityManager.CreateEntityQuery(typeof(T));
 
         [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            DefaultWorldInitialization.Initialize("Default", true);
-        }
+        public void OneTimeSetUp() => DefaultWorldInitialization.Initialize("Default", true);
 
         [OneTimeTearDown]
         public void OneTimeTearDown()
@@ -52,15 +43,12 @@ namespace Sibz.EntityEvents.Tests
         {
             TestWorld = new World("EntityEventsTestWorld");
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(TestWorld,
-                new[] {typeof(BeginInitializationEntityCommandBufferSystem)});
+                new[] { typeof(BeginInitializationEntityCommandBufferSystem) });
             TestWorld.CreateSystem<EventComponentSystem>();
         }
 
         [TearDown]
-        public void TearDown()
-        {
-            TestWorld.Dispose();
-        }
+        public void TearDown() => TestWorld.Dispose();
 
         [Test]
         public void WhenNoBeginInitBufferSystem_ShouldThrow()
@@ -99,10 +87,8 @@ namespace Sibz.EntityEvents.Tests
         }
 
         [Test]
-        public void EventTypes_ShouldContainDefinedEvents()
-        {
+        public void EventTypes_ShouldContainDefinedEvents() =>
             Assert.Contains((ComponentType) typeof(TestEvent), EventComponentSystem.EventTypes);
-        }
 
         [Test]
         public void ShouldBeAbleToQueueMultipleSameEvents()
@@ -126,7 +112,7 @@ namespace Sibz.EntityEvents.Tests
         [Test]
         public void WhenEnqueuingWithData_ShouldHaveCorrectData()
         {
-            TestWorld.EnqueueEvent(new TestEventWithData {Index = 5});
+            TestWorld.EnqueueEvent(new TestEventWithData { Index = 5 });
             EventComponentSystem.Update();
             BufferSystem.Update();
             Assert.AreEqual(5, GetSingletonQuery<TestEventWithData>().GetSingleton<TestEventWithData>().Index);
@@ -137,7 +123,7 @@ namespace Sibz.EntityEvents.Tests
         {
             //EventComponentSystem.Update();
             //BufferSystem.Update();
-            TestEventRaisingSystem system = TestWorld.CreateSystem<TestEventRaisingSystem>();
+            var system = TestWorld.CreateSystem<TestEventRaisingSystem>();
             system.Update();
             EventComponentSystem.Update();
             BufferSystem.Update();
@@ -169,10 +155,7 @@ namespace Sibz.EntityEvents.Tests
         {
             public EnqueueEventJobPart<T> JobPart;
 
-            public void Execute()
-            {
-                JobPart.Execute();
-            }
+            public void Execute() => JobPart.Execute();
         }
 
         [DisableAutoCreation]

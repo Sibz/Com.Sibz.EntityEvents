@@ -10,26 +10,17 @@ namespace Sibz.EntityEvents.Tests
         private World world;
 
         [SetUp]
-        public void SetUp()
-        {
-            world = new World("Test");
-        }
+        public void SetUp() => world = new World("Test");
 
         [TearDown]
-        public void TearDown()
-        {
-            world.Dispose();
-        }
+        public void TearDown() => world.Dispose();
 
         [Test]
         public void ShouldCallActionWhenEventExists()
         {
-            bool actionCalled = false;
+            var actionCalled = false;
 
-            void OnAction(IEventComponentData test)
-            {
-                actionCalled = true;
-            }
+            void OnAction(IEventComponentData test) => actionCalled = true;
 
             world.EntityManager.CreateEntity(typeof(TestEvent));
             var system = world.CreateSystem<HookSystem>();
@@ -41,15 +32,12 @@ namespace Sibz.EntityEvents.Tests
         [Test]
         public void ShouldCallActionWithData()
         {
-            int index = 0;
+            var index = 0;
 
-            void OnAction(IEventComponentData test)
-            {
-                index = ((TestEventWithData) test).Index;
-            }
+            void OnAction(IEventComponentData test) => index = ((TestEventWithData) test).Index;
 
-            var e = world.EntityManager.CreateEntity(typeof(TestEventWithData));
-            world.EntityManager.SetComponentData(e, new TestEventWithData {Index = 42});
+            Entity e = world.EntityManager.CreateEntity(typeof(TestEventWithData));
+            world.EntityManager.SetComponentData(e, new TestEventWithData { Index = 42 });
             var system = world.CreateSystem<HookSystem>();
             system.RegisterHook<TestEventWithData>(OnAction);
             system.Update();
@@ -59,12 +47,9 @@ namespace Sibz.EntityEvents.Tests
         [Test]
         public void ShouldNotCallAfterDeregisterHook()
         {
-            bool actionCalled = false;
+            var actionCalled = false;
 
-            void OnAction(IEventComponentData test)
-            {
-                actionCalled = true;
-            }
+            void OnAction(IEventComponentData test) => actionCalled = true;
 
             world.EntityManager.CreateEntity(typeof(TestEvent));
             var system = world.CreateSystem<HookSystem>();
@@ -77,30 +62,24 @@ namespace Sibz.EntityEvents.Tests
         [Test]
         public void ShouldCallMultipleActions()
         {
-            int index = 0;
-            bool actionCalled = false;
+            var index = 0;
+            var actionCalled = false;
             var system = world.CreateSystem<HookSystem>();
 
-            void OnAction1(IEventComponentData test)
-            {
-                actionCalled = true;
-            }
+            void OnAction1(IEventComponentData test) => actionCalled = true;
 
-            void OnAction2(IEventComponentData test)
-            {
-                index = ((TestEventWithData) test).Index;
-            }
+            void OnAction2(IEventComponentData test) => index = ((TestEventWithData) test).Index;
 
             world.EntityManager.CreateEntity(typeof(TestEvent));
 
 
-            var e = world.EntityManager.CreateEntity(typeof(TestEventWithData));
-            world.EntityManager.SetComponentData(e, new TestEventWithData {Index = 42});
+            Entity e = world.EntityManager.CreateEntity(typeof(TestEventWithData));
+            world.EntityManager.SetComponentData(e, new TestEventWithData { Index = 42 });
 
-            system.RegisterHooks(new Dictionary<ComponentType, Action<IEventComponentData>>()
+            system.RegisterHooks(new Dictionary<ComponentType, Action<IEventComponentData>>
             {
-                {typeof(TestEvent), OnAction1},
-                {typeof(TestEventWithData), OnAction2},
+                { typeof(TestEvent), OnAction1 },
+                { typeof(TestEventWithData), OnAction2 }
             });
 
             system.Update();

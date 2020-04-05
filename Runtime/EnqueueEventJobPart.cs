@@ -10,9 +10,6 @@ namespace Sibz.EntityEvents
         public T EventData;
         public int Index;
 
-        public void Execute()
-        {
-            CommandBuffer.CreateSingleton(Index, EventData);
-        }
+        public void Execute() => CommandBuffer.CreateSingleton(Index, EventData);
     }
 }
