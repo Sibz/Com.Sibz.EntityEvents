@@ -1,7 +1,7 @@
 {
   "author": "Steven Turner",
   "dependencies": {
-    "com.sibz.command-buffer-helpers": "0.2.1",
+    "com.sibz.command-buffer-helpers": "0.2.3",
     "com.unity.entities": "0.8.0-preview.8"
   },
   "deprecated": false,
@@ -9,6 +9,6 @@
   "displayName": "Sibz: Entity Events",
   "license": "ISC",
   "name": "com.sibz.entity-events",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "repository": "https://github.com/Sibz/Com.Sibz.EntityEvents"
 }
