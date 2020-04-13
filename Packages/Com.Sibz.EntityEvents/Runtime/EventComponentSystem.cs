@@ -10,14 +10,19 @@ using Unity.Jobs;
 
 namespace Sibz.EntityEvents
 {
+    public class EventComponentSystem : EventComponentSystem<BeginInitCommandBuffer>
+    {
+    }
+
     [AlwaysUpdateSystem]
-    public class EventComponentSystem : JobComponentSystem
+    public abstract class EventComponentSystem<T> : JobComponentSystem
+        where T : class, ICommandBuffer, new()
     {
         public static readonly ComponentType[] EventTypes = GetEventTypes();
         private EntityQuery allEventComponentsQuery;
-        private BeginInitCommandBuffer commandBufferDestroyer;
-        private BeginInitCommandBuffer commandBufferCreator;
-        private BeginInitCommandBuffer commandBufferConcurrent;
+        private T commandBufferDestroyer;
+        private T commandBufferCreator;
+        private T commandBufferConcurrent;
         private int concurrentRequestCount;
 
         public EnqueueEventJobPart<T> GetJobPart<T>(T eventData)
@@ -33,7 +38,7 @@ namespace Sibz.EntityEvents
             };
         }
 
-        private static void EnsureDestroyBufferIsExecutedFirst(BeginInitCommandBuffer destroyBuffer)
+        private static void EnsureDestroyBufferIsExecutedFirst(T destroyBuffer)
         {
             // This ensures the non concurrent buffer is created/executed first
             // Required as the destroy entities on OnUpdate needs to occur first
@@ -44,16 +49,22 @@ namespace Sibz.EntityEvents
             }
         }
 
-        public void ConcurrentBufferAddJobDependency(JobHandle job) => commandBufferConcurrent.AddJobDependency(job);
+        public void ConcurrentBufferAddJobDependency(JobHandle job)
+        {
+            commandBufferConcurrent.AddJobDependency(job);
+        }
 
-        public void EnqueueEvent(object eventData) => CreateSingletonFromObject(eventData);
+        public void EnqueueEvent(object eventData)
+        {
+            CreateSingletonFromObject(eventData);
+        }
 
         protected override void OnCreate()
         {
             allEventComponentsQuery = GetEntityQuery(new EntityQueryDesc { Any = EventTypes });
-            commandBufferDestroyer = new BeginInitCommandBuffer(World);
-            commandBufferConcurrent = new BeginInitCommandBuffer(World);
-            commandBufferCreator = new BeginInitCommandBuffer(World);
+            commandBufferDestroyer = new T { World = World };
+            commandBufferConcurrent = new T { World = World };
+            commandBufferCreator = new T { World = World };
             commandBufferConcurrent.NewBuffer += () => concurrentRequestCount = 0;
         }
 
@@ -65,7 +76,7 @@ namespace Sibz.EntityEvents
 
         private static ComponentType[] GetEventTypes()
         {
-            var types = new List<ComponentType>();
+            List<ComponentType> types = new List<ComponentType>();
             foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
             {
                 types.AddRange(a.GetTypes()
@@ -78,7 +89,7 @@ namespace Sibz.EntityEvents
 
         private void CreateSingletonFromObject(object obj)
         {
-            MethodInfo method = typeof(EventComponentSystem).GetMethod(nameof(CreateSingleton),
+            MethodInfo method = typeof(EventComponentSystem<T>).GetMethod(nameof(CreateSingleton),
                 BindingFlags.Instance | BindingFlags.NonPublic);
             if (method is null)
             {
