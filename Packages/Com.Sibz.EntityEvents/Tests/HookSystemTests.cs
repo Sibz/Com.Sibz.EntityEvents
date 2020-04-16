@@ -89,6 +89,22 @@ namespace Sibz.EntityEvents.Tests
             Assert.AreEqual(42, index);
         }
 
+        [Test]
+        public void ShouldAllowMultiHookRegistration()
+        {
+            int actionsCalled = 0;
+
+            void OnAction1(IEventComponentData test) => actionsCalled++;
+            void OnAction2(IEventComponentData test) => actionsCalled++;
+
+            HookSystem system = world.CreateSystem<HookSystem>();
+            system.RegisterHook<TestEvent>(OnAction1);
+            system.RegisterHook<TestEvent>(OnAction2);
+            world.EntityManager.CreateEntity(typeof(TestEvent));
+            system.Update();
+            Assert.AreEqual(2, actionsCalled);
+        }
+
         public struct TestEvent : IEventComponentData
         {
         }

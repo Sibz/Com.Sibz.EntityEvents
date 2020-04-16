@@ -22,7 +22,7 @@ namespace Sibz.EntityEvents
         {
             if (ActionMap.ContainsKey(componentType))
             {
-                ActionMap[componentType] = action;
+                ActionMap[componentType] += action;
                 return;
             }
 
