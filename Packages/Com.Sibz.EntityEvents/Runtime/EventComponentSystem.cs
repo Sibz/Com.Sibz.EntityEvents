@@ -15,7 +15,7 @@ namespace Sibz.EntityEvents
     }
 
     [AlwaysUpdateSystem]
-    public abstract class EventComponentSystem<T> : JobComponentSystem
+    public abstract class EventComponentSystem<T> : SystemBase
         where T : class, ICommandBuffer, new()
     {
         public static readonly ComponentType[] EventTypes = GetEventTypes();
@@ -68,10 +68,9 @@ namespace Sibz.EntityEvents
             commandBufferConcurrent.NewBuffer += () => concurrentRequestCount = 0;
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        protected override void OnUpdate()
         {
             commandBufferDestroyer.Buffer.DestroyEntity(allEventComponentsQuery);
-            return inputDeps;
         }
 
         private static ComponentType[] GetEventTypes()
