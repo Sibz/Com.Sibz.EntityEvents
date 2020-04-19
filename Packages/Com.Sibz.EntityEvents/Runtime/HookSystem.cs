@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 
 namespace Sibz.EntityEvents
 {
-    public class HookSystem : ComponentSystem
+    public class HookSystem : SystemBase
     {
         protected readonly Dictionary<ComponentType, Action<IEventComponentData>> ActionMap =
             new Dictionary<ComponentType, Action<IEventComponentData>>();
@@ -71,34 +72,47 @@ namespace Sibz.EntityEvents
                 .GetMethod(nameof(EntityManager.GetComponentData));
         }
 
-        protected override void OnUpdate() =>
-            Entities.With(allEventComponentsQuery).ForEach(e =>
+        protected override void OnUpdate()
+        {
+            using (NativeArray<Entity> entities =
+                allEventComponentsQuery.ToEntityArrayAsync(Allocator.TempJob, out JobHandle jh))
             {
-                NativeArray<ComponentType> components = EntityManager.GetComponentTypes(e, Allocator.TempJob);
-                if (components.Length == 0)
-                {
-                    components.Dispose();
-                    return;
-                }
+                jh.Complete();
+                IterateEntitiesAndInvokeActions(entities);
+            }
+        }
 
-                if (!ActionMap.ContainsKey(components[0]))
+        private void IterateEntitiesAndInvokeActions(NativeArray<Entity> entities)
+        {
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Entity eventEntity = entities[i];
+                InvokeActionsIfRequired(eventEntity);
+            }
+        }
+
+        private void InvokeActionsIfRequired(Entity eventEntity)
+        {
+            using (NativeArray<ComponentType> components = EntityManager.GetComponentTypes(eventEntity, Allocator.TempJob))
+            {
+                if (components.Length == 0 || !ActionMap.ContainsKey(components[0]))
                 {
-                    components.Dispose();
                     return;
                 }
 
                 if (components[0].IsZeroSized)
                 {
                     ActionMap[components[0]].Invoke(default);
-                    components.Dispose();
                     return;
                 }
 
                 Type type = components[0].GetManagedType();
                 MethodInfo getComponent = getComponentMethodInfo.MakeGenericMethod(type);
                 ActionMap[components[0]]
-                    .Invoke(getComponent.Invoke(EntityManager, new object[] { e }) as IEventComponentData);
-                components.Dispose();
-            });
+                    .Invoke(
+                        getComponent.Invoke(EntityManager,
+                            new object[] { eventEntity }) as IEventComponentData);
+            }
+        }
     }
 }
