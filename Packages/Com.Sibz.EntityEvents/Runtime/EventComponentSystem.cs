@@ -12,13 +12,72 @@ namespace Sibz.EntityEvents
 {
     public class EventComponentSystem : EventComponentSystem<BeginInitCommandBuffer>
     {
+        private static readonly string[] ExcludedAssemblies =
+        {
+            "mscorlib,",
+            "Accessibility,",
+            "Unity.",
+            "UnityEngine,",
+            "UnityEngine.",
+            "UnityEditor,",
+            "UnityEditor.",
+            "System,",
+            "System.",
+            "nunit.framework,",
+            "ReportGeneratorMerged,",
+            "netstandard",
+            "ExCSS.Unity,",
+            "JetBrains.",
+            "Mono.",
+            "Novell.",
+            "Microsoft."
+        };
+
+        public static readonly ComponentType[] EventTypes = GetEventTypes();
+
+        private static ComponentType[] GetEventTypes()
+        {
+
+            List<Assembly> asses = new List<Assembly>();
+            List<ComponentType> types = new List<ComponentType>();
+            var localAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < localAssemblies.Length; i++)
+            {
+                bool exclude = false;
+                for (int j = 0; j < ExcludedAssemblies.Length; j++)
+                {
+                    if (!localAssemblies[i].FullName.StartsWith(ExcludedAssemblies[j]))
+                    {
+                        continue;
+                    }
+
+                    exclude = true;
+                    break;
+                }
+
+                if (!exclude)
+                {
+                    asses.Add(localAssemblies[i]);
+                }
+
+            }
+
+            foreach (Assembly a in asses)
+            {
+                types.AddRange(a.GetTypes()
+                    .Where(x => x.IsValueType && x.GetInterfaces().Contains(typeof(IEventComponentData)))
+                    .Select(t => (ComponentType) t));
+            }
+
+            return types.ToArray();
+        }
     }
 
     [AlwaysUpdateSystem]
     public abstract class EventComponentSystem<T> : SystemBase
         where T : class, ICommandBuffer, new()
     {
-        public static readonly ComponentType[] EventTypes = GetEventTypes();
+
         private EntityQuery allEventComponentsQuery;
         private T commandBufferDestroyer;
         private T commandBufferCreator;
@@ -61,7 +120,7 @@ namespace Sibz.EntityEvents
 
         protected override void OnCreate()
         {
-            allEventComponentsQuery = GetEntityQuery(new EntityQueryDesc { Any = EventTypes });
+            allEventComponentsQuery = GetEntityQuery(new EntityQueryDesc { Any = EventComponentSystem.EventTypes });
             commandBufferDestroyer = new T { World = World };
             commandBufferConcurrent = new T { World = World };
             commandBufferCreator = new T { World = World };
@@ -71,64 +130,6 @@ namespace Sibz.EntityEvents
         protected override void OnUpdate()
         {
             commandBufferDestroyer.Buffer.DestroyEntity(allEventComponentsQuery);
-        }
-
-        private static readonly string[] ExcludedAssemblies =
-        {
-            "mscorlib,",
-            "Accessibility,",
-            "Unity.",
-            "UnityEngine,",
-            "UnityEngine.",
-            "UnityEditor,",
-            "UnityEditor.",
-            "System,",
-            "System.",
-            "nunit.framework,",
-            "ReportGeneratorMerged,",
-            "netstandard",
-            "ExCSS.Unity,",
-            "JetBrains.",
-            "Mono.",
-            "Novell.",
-            "Microsoft."
-        };
-
-        private static ComponentType[] GetEventTypes()
-        {
-
-            List<Assembly> asses = new List<Assembly>();
-            List<ComponentType> types = new List<ComponentType>();
-            var localAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < localAssemblies.Length; i++)
-            {
-                bool exclude = false;
-                for (int j = 0; j < ExcludedAssemblies.Length; j++)
-                {
-                    if (!localAssemblies[i].FullName.StartsWith(ExcludedAssemblies[j]))
-                    {
-                        continue;
-                    }
-
-                    exclude = true;
-                    break;
-                }
-
-                if (!exclude)
-                {
-                    asses.Add(localAssemblies[i]);
-                }
-
-            }
-
-            foreach (Assembly a in asses)
-            {
-                types.AddRange(a.GetTypes()
-                    .Where(x => x.IsValueType && x.GetInterfaces().Contains(typeof(IEventComponentData)))
-                    .Select(t => (ComponentType) t));
-            }
-
-            return types.ToArray();
         }
 
         private void CreateSingletonFromObject(object obj)
