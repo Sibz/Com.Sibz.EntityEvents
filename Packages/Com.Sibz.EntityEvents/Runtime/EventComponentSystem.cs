@@ -73,10 +73,55 @@ namespace Sibz.EntityEvents
             commandBufferDestroyer.Buffer.DestroyEntity(allEventComponentsQuery);
         }
 
+        private static readonly string[] ExcludedAssemblies =
+        {
+            "mscorlib,",
+            "Accessibility,",
+            "Unity.",
+            "UnityEngine,",
+            "UnityEngine.",
+            "UnityEditor,",
+            "UnityEditor.",
+            "System,",
+            "System.",
+            "nunit.framework,",
+            "ReportGeneratorMerged,",
+            "netstandard",
+            "ExCSS.Unity,",
+            "JetBrains.",
+            "Mono.",
+            "Novell.",
+            "Microsoft."
+        };
+
         private static ComponentType[] GetEventTypes()
         {
+
+            List<Assembly> asses = new List<Assembly>();
             List<ComponentType> types = new List<ComponentType>();
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+            var localAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < localAssemblies.Length; i++)
+            {
+                bool exclude = false;
+                for (int j = 0; j < ExcludedAssemblies.Length; j++)
+                {
+                    if (!localAssemblies[i].FullName.StartsWith(ExcludedAssemblies[j]))
+                    {
+                        continue;
+                    }
+
+                    exclude = true;
+                    break;
+                }
+
+                if (!exclude)
+                {
+                    asses.Add(localAssemblies[i]);
+                }
+
+            }
+
+            foreach (Assembly a in asses)
             {
                 types.AddRange(a.GetTypes()
                     .Where(x => x.IsValueType && x.GetInterfaces().Contains(typeof(IEventComponentData)))
